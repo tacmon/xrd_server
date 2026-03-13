@@ -1,4 +1,5 @@
 import os
+import sys
 import shutil
 import subprocess
 import csv
@@ -10,7 +11,8 @@ app = FastAPI()
 
 # 容器内的工作目录
 WORKING_DIR = "/workspace"
-SPECTRA_DIR = os.path.join(WORKING_DIR, "Spectra")
+# 使用容器内部的临时目录，避免清空挂载的宿主机目录
+SPECTRA_DIR = "/tmp/api_spectra"
 RESULT_CSV = os.path.join(WORKING_DIR, "result.csv")
 
 # 确保 Spectra 目录存在
@@ -33,12 +35,20 @@ def cleanup_spectra():
 def run_prediction():
     """调用 run_CNN.py 进行预测"""
     try:
-        # 使用 subprocess 调用原有的脚本
-        subprocess.run(["python", "run_CNN.py", "--inc_pdf"], check=True, cwd=WORKING_DIR)
-        return True
+        # 使用 sys.executable 以确保使用与当前服务器相同的 Python 解释器
+        # capture_output=True 用于捕获错误日志以供诊断
+        result = subprocess.run([sys.executable, "run_CNN.py", "--inc_pdf", f"--spectra_dir={SPECTRA_DIR}"], 
+                                capture_output=True, text=True, check=True, cwd=WORKING_DIR)
+        print("Prediction output:", result.stdout)
+        return True, "Success"
     except subprocess.CalledProcessError as e:
-        print(f"Prediction failed with exit code {e.returncode}")
-        return False
+        error_msg = f"Prediction failed with exit code {e.returncode}. Stderr: {e.stderr}"
+        print(error_msg)
+        return False, error_msg
+    except Exception as e:
+        error_msg = f"Unexpected error during prediction: {str(e)}"
+        print(error_msg)
+        return False, error_msg
 
 def parse_results(target_filename: str):
     """解析 result.csv 并生成要求的 JSON 格式"""
@@ -85,11 +95,11 @@ async def predict(content: str = Body(..., embed=True)):
         f.write(content)
     
     # 2. 执行预测
-    success = run_prediction()
+    success, message = run_prediction()
     
     if not success:
         cleanup_spectra()
-        return {"error": "Prediction failed"}
+        return {"code": 500, "status": "error", "message": message, "data": None}
     
     # 3. 解析结果
     result = parse_results(filename)

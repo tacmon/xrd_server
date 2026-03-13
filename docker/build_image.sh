@@ -17,8 +17,7 @@ WORKDIR /workspace
 COPY docker/ /workspace/docker/
 
 # 4. 进入 docker 目录并安装依赖
-RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && \
-    cd /workspace/docker && pip install -e .
+RUN cd /workspace/docker && pip install .
 
 # 5. 为了防止大模型测试和评测脚本缺少第三方包，进行一次补充安装
 RUN pip install requests urllib3 pandas openpyxl fastapi uvicorn python-multipart

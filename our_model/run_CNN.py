@@ -68,9 +68,13 @@ if __name__ == '__main__':
             show_indiv = True
         if '--refined_phases_dir' in arg:
             refined_phases_dir = str(arg.split('=')[1])
+        if '--spectra_dir' in arg:
+            spectra_dir = str(arg.split('=')[1])
+        else:
+            spectra_dir = 'Spectra'
 
     # Make sure at least one spectrum is provided
-    assert len(os.listdir('Spectra')) > 0, 'Please provide at least one pattern in the Spectra directory.'
+    assert len(os.listdir(spectra_dir)) > 0, f'Please provide at least one pattern in the {spectra_dir} directory.'
 
     # Keep results separate
     results = {'XRD': {}, 'PDF': {}}
@@ -98,7 +102,7 @@ if __name__ == '__main__':
 
     # Get predictions from XRD analysis
     results['XRD']['filenames'], results['XRD']['phases'], results['XRD']['confs'], results['XRD']['backup_phases'], \
-        results['XRD']['scale_factors'], results['XRD']['reduced_spectra'] = spectrum_analysis.main('Spectra', 'References',
+        results['XRD']['scale_factors'], results['XRD']['reduced_spectra'] = spectrum_analysis.main(spectra_dir, 'References',
         max_phases, cutoff_intensity, min_conf, wavelength, min_angle, max_angle, parallel, model_path, is_pdf=False)
 
     if inc_pdf:
@@ -109,7 +113,7 @@ if __name__ == '__main__':
             raise FileNotFoundError("No PyTorch PDF model found. Expected Models/PDF_Model.pth")
             
         results['PDF']['filenames'], results['PDF']['phases'], results['PDF']['confs'], results['PDF']['backup_phases'], \
-            results['PDF']['scale_factors'], results['PDF']['reduced_spectra'] = spectrum_analysis.main('Spectra', 'References',
+            results['PDF']['scale_factors'], results['PDF']['reduced_spectra'] = spectrum_analysis.main(spectra_dir, 'References',
             max_phases, cutoff_intensity, min_conf, wavelength, min_angle, max_angle, parallel, pdf_model_path, is_pdf=True)
 
         # Aggregate XRD and PDF predictions
@@ -186,7 +190,7 @@ if __name__ == '__main__':
             phasenames = ['%s.cif' % phase for phase in phase_set]
 
             # Plot measured spectrum with line profiles of predicted phases
-            visualizer.main('Spectra', spectrum_fname, phasenames, heights, final_spectrum,
+            visualizer.main(spectra_dir, spectrum_fname, phasenames, heights, final_spectrum,
                 min_angle, max_angle, wavelength, save, show_reduced, inc_pdf, plot_both, raw,
                     refined_phases_dir=refined_phases_dir)
 
@@ -196,7 +200,7 @@ if __name__ == '__main__':
             phasenames = ['%s.cif' % phase for phase in phase_set]
 
             # Get weight fractions
-            weights = quantifier.main('Spectra', spectrum_fname, phasenames, heights, min_angle, max_angle,
+            weights = quantifier.main(spectra_dir, spectrum_fname, phasenames, heights, min_angle, max_angle,
                 wavelength, refined_phases_dir)
             weights = [round(val, 2) for val in weights]
             print('Weight fractions: %s' % weights)
