@@ -1,28 +1,34 @@
 import os
 import requests
 import json
-
-# API 配置
-API_URL = "http://localhost:8000/predict"
-SPECTRA_DIR = "./Spectra"  # 本地存放待测文件的目录
-OUTPUT_JSON = "results.json"
+import argparse
 
 def main():
-    if not os.path.exists(SPECTRA_DIR):
-        print(f"Error: Directory '{SPECTRA_DIR}' not found.")
+    parser = argparse.ArgumentParser(description="XRD 模型调用脚本")
+    parser.add_argument("--folder", type=str, default="./Spectra", help="存放待测 XRD .txt 文件的目录")
+    parser.add_argument("--api", type=str, default="http://localhost:8000/predict", help="API 预测地址")
+    parser.add_argument("--output", type=str, default="results.json", help="结果保存路径")
+    args = parser.parse_args()
+
+    spectra_dir = args.folder
+    api_url = args.api
+    output_json = args.output
+
+    if not os.path.exists(spectra_dir):
+        print(f"Error: Directory '{spectra_dir}' not found.")
         return
 
     results = {}
-    files = sorted([f for f in os.listdir(SPECTRA_DIR) if f.endswith('.txt')])
+    files = sorted([f for f in os.listdir(spectra_dir) if f.endswith('.txt')])
     
     if not files:
-        print(f"No .txt files found in {SPECTRA_DIR}")
+        print(f"No .txt files found in {spectra_dir}")
         return
 
     print(f"Found {len(files)} files to process.")
 
     for filename in files:
-        file_path = os.path.join(SPECTRA_DIR, filename)
+        file_path = os.path.join(spectra_dir, filename)
         with open(file_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
@@ -32,7 +38,7 @@ def main():
             payload = {
                 "content": content
             }
-            response = requests.post(API_URL, json=payload)
+            response = requests.post(api_url, json=payload)
             
             if response.status_code == 200:
                 result = response.json()
@@ -45,10 +51,10 @@ def main():
             print(f"Error: {e}")
 
     # 保存汇总结果为 JSON
-    with open(OUTPUT_JSON, 'w', encoding='utf-8') as f:
+    with open(output_json, 'w', encoding='utf-8') as f:
         json.dump(results, f, indent=4, ensure_ascii=False)
     
-    print(f"\nAll results saved to {OUTPUT_JSON}")
+    print(f"\nAll results saved to {output_json}")
 
 if __name__ == "__main__":
     main()
