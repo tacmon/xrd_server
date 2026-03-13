@@ -8,7 +8,7 @@ WORKDIR /workspace
 COPY docker/ /workspace/docker/
 
 # 4. 进入 docker 目录并安装依赖
-RUN cd /workspace/docker && pip install .
+RUN cd /workspace/docker && pip install -e .
 
 # 5. 为了防止大模型测试和评测脚本缺少第三方包，进行一次补充安装
 RUN pip install requests urllib3 pandas openpyxl fastapi uvicorn python-multipart

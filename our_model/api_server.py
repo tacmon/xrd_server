@@ -11,8 +11,8 @@ app = FastAPI()
 
 # 容器内的工作目录
 WORKING_DIR = "/workspace"
-# 使用容器内部的临时目录，避免清空挂载的宿主机目录
-SPECTRA_DIR = "/tmp/api_spectra"
+# 保持与 Dockerfile 和需求文档一致
+SPECTRA_DIR = os.path.join(WORKING_DIR, "Spectra")
 RESULT_CSV = os.path.join(WORKING_DIR, "result.csv")
 
 # 确保 Spectra 目录存在
@@ -70,7 +70,7 @@ def parse_results(target_filename: str):
             except:
                 preds = row['Predicted phases']
             
-            # 判断是否包含 CrSiTe3 (正例判断逻辑参考了评测脚本)
+            # 判断是否包含 CrSiTe3 (正例判断逻辑：固定检测 CrSiTe3)
             if isinstance(preds, list):
                 if any('CrSiTe3' in p for p in preds):
                     is_positive = True
