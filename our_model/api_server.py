@@ -2,10 +2,7 @@ import os
 import shutil
 import subprocess
 import csv
-import ast
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks
-from typing import List
-import uvicorn
+from fastapi import FastAPI, Body
 
 app = FastAPI()
 
@@ -19,6 +16,8 @@ os.makedirs(SPECTRA_DIR, exist_ok=True)
 
 def cleanup_spectra():
     """预测完成后清空 Spectra 目录"""
+    if not os.path.exists(SPECTRA_DIR):
+        return
     for filename in os.listdir(SPECTRA_DIR):
         file_path = os.path.join(SPECTRA_DIR, filename)
         try:
@@ -39,16 +38,19 @@ def run_prediction():
         print(f"Prediction failed with exit code {e.returncode}")
         return False
 
-def parse_results():
+def parse_results(target_filename: str):
     """解析 result.csv 并生成要求的 JSON 格式"""
-    results_json = {}
     if not os.path.exists(RESULT_CSV):
-        return results_json
+        return False
 
+    is_positive = False
     with open(RESULT_CSV, mode='r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         for row in reader:
             filename = row['Filename']
+            if filename != target_filename:
+                continue
+
             preds = []
             try:
                 # 解析字符串形式的列表，例如 "['CrSiTe3_148', 'SiTe2_164']"
@@ -57,7 +59,6 @@ def parse_results():
                 preds = row['Predicted phases']
             
             # 判断是否包含 CrSiTe3 (正例判断逻辑参考了评测脚本)
-            is_positive = False
             if isinstance(preds, list):
                 if any('CrSiTe3' in p for p in preds):
                     is_positive = True
@@ -65,17 +66,20 @@ def parse_results():
                 if 'CrSiTe3' in preds:
                     is_positive = True
             
-            results_json[filename] = is_positive
+            # 找到目标文件后即可停止
+            break
     
-    return results_json
+    return is_positive
 
 @app.post("/predict")
-async def predict(files: List[UploadFile] = File(...)):
-    # 1. 保存上传的文件到 Spectra 目录
-    for file in files:
-        file_path = os.path.join(SPECTRA_DIR, file.filename)
-        with open(file_path, "wb") as buffer:
-            shutil.copyfileobj(file.file, buffer)
+async def predict(filename: str = Body(...), content: str = Body(...)):
+    # 0. 预测前清空 Spectra 目录，确保环境干净
+    cleanup_spectra()
+
+    # 1. 将接收到的文本内容保存为 Spectra 目录下的单个文件
+    file_path = os.path.join(SPECTRA_DIR, filename)
+    with open(file_path, "w", encoding='utf-8') as f:
+        f.write(content)
     
     # 2. 执行预测
     success = run_prediction()
@@ -85,12 +89,12 @@ async def predict(files: List[UploadFile] = File(...)):
         return {"error": "Prediction failed"}
     
     # 3. 解析结果
-    results = parse_results()
+    result = parse_results(filename)
     
-    # 4. 清空 Spectra 目录 (作为背景任务或直接在此处执行)
+    # 4. 清空 Spectra 目录，为下一次预测做准备
     cleanup_spectra()
     
-    return results
+    return result
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
