@@ -30,7 +30,6 @@ def main():
         
         try:
             payload = {
-                "filename": filename,
                 "content": content
             }
             response = requests.post(API_URL, json=payload)

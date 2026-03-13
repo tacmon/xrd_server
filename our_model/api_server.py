@@ -72,11 +72,12 @@ def parse_results(target_filename: str):
     return is_positive
 
 @app.post("/predict")
-async def predict(filename: str = Body(...), content: str = Body(...)):
+async def predict(content: str = Body(..., embed=True)):
     # 0. 预测前清空 Spectra 目录，确保环境干净
     cleanup_spectra()
 
-    # 1. 将接收到的文本内容保存为 Spectra 目录下的单个文件
+    # 1. 将接收到的文本内容保存为 Spectra 目录下的固定文件名
+    filename = "input.txt"
     file_path = os.path.join(SPECTRA_DIR, filename)
     with open(file_path, "w", encoding='utf-8') as f:
         f.write(content)
