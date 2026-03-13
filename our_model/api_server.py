@@ -2,6 +2,8 @@ import os
 import shutil
 import subprocess
 import csv
+import ast
+import uvicorn
 from fastapi import FastAPI, Body
 
 app = FastAPI()
@@ -95,7 +97,11 @@ async def predict(content: str = Body(..., embed=True)):
     # 4. 清空 Spectra 目录，为下一次预测做准备
     cleanup_spectra()
     
-    return result
+    return {"code": 200, "status": "success", "message": "Prediction successful", "data": result}
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    return {"code": 500, "status": "error", "message": str(exc), "data": None}
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

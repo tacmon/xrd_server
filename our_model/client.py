@@ -41,11 +41,15 @@ def main():
             response = requests.post(api_url, json=payload)
             
             if response.status_code == 200:
-                result = response.json()
-                results[filename] = result
-                print("Done.")
+                resp_json = response.json()
+                if resp_json.get("code") == 200 and resp_json.get("status") == "success":
+                    result = resp_json.get("data")
+                    results[filename] = result
+                    print("Done.")
+                else:
+                    print(f"Failed (API Error: {resp_json.get('message')})")
             else:
-                print(f"Failed (Status: {response.status_code})")
+                print(f"Failed (HTTP Status: {response.status_code})")
                 print(response.text)
         except Exception as e:
             print(f"Error: {e}")
