@@ -70,7 +70,8 @@ def main():
     ignore_extensions = ('.cif', '.jip', '.jpg', '.png', '.jpeg', '.json', '.md', '.py', '.sh', '.csv', '.zip', '.tar', '.gz')
     for root, dirs, filenames in os.walk(args.folder):
         for fname in sorted(filenames):
-            if not fname.lower().endswith(ignore_extensions):
+            # 排除以 . 开头的文件（如 .gitkeep, .DS_Store）以及特定的非光谱后缀
+            if not fname.startswith('.') and not fname.lower().endswith(ignore_extensions):
                 full_path = os.path.join(root, fname)
                 rel_path = os.path.relpath(full_path, args.folder)
                 txt_files.append((rel_path, full_path))
@@ -139,34 +140,50 @@ def main():
             "max_tokens": 1024
         }
 
-        try:
-            response = requests.post(args.api, headers=headers, json=payload, timeout=60)
-            response.raise_for_status()
-            
-            result_data = response.json()
-            raw_answer = result_data['choices'][0]['message']['content'].strip()
-            
-            # 提取 JSON 内容
-            if "```json" in raw_answer:
-                raw_answer = raw_answer.split("```json")[1].split("```")[0].strip()
-            elif "```" in raw_answer:
-                raw_answer = raw_answer.split("```")[1].split("```")[0].strip()
-            
+        max_retries = 5
+        retry_delay = 5  # 初始等待秒数
+        
+        for attempt in range(max_retries):
             try:
-                id_results = json.loads(raw_answer)
-                # 兼容返回格式可能是 {"result": true} 或直接是 true
-                if isinstance(id_results, dict) and "result" in id_results:
-                    results[rel_path] = id_results["result"]
-                else:
-                    results[rel_path] = id_results
-                print("Done.")
-            except json.JSONDecodeError:
-                print("Error (JSON Parse Failed).")
-                results[rel_path] = "Parse Error"
+                response = requests.post(args.api, headers=headers, json=payload, timeout=60)
                 
-        except Exception as e:
-            print(f"Failed ({e})")
-            results[rel_path] = "API Error"
+                if response.status_code == 429:
+                    print(f"Rate limited (429). Retrying in {retry_delay}s... (Attempt {attempt+1}/{max_retries})", end="\r", flush=True)
+                    time.sleep(retry_delay)
+                    retry_delay *= 2  # 指数退避
+                    continue
+                    
+                response.raise_for_status()
+                
+                result_data = response.json()
+                raw_answer = result_data['choices'][0]['message']['content'].strip()
+                
+                # 提取 JSON 内容
+                if "```json" in raw_answer:
+                    raw_answer = raw_answer.split("```json")[1].split("```")[0].strip()
+                elif "```" in raw_answer:
+                    raw_answer = raw_answer.split("```")[1].split("```")[0].strip()
+                
+                try:
+                    id_results = json.loads(raw_answer)
+                    if isinstance(id_results, dict) and "result" in id_results:
+                        results[rel_path] = id_results["result"]
+                    else:
+                        results[rel_path] = id_results
+                    print("Done.                                         ") # 清除重试行的残留文字
+                    break # 成功则跳出重试循环
+                except json.JSONDecodeError:
+                    print("Error (JSON Parse Failed).")
+                    results[rel_path] = "Parse Error"
+                    break
+                    
+            except Exception as e:
+                if attempt == max_retries - 1:
+                    print(f"Failed after {max_retries} attempts ({e})")
+                    results[rel_path] = "API Error"
+                else:
+                    time.sleep(retry_delay)
+                    retry_delay *= 2
 
         # 暂停一段时间，避免触发频率限制
         if idx < len(txt_files) - 1:

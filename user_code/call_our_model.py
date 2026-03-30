@@ -69,7 +69,8 @@ def main():
     ignore_extensions = ('.cif', '.jip', '.jpg', '.png', '.jpeg', '.json', '.md', '.py', '.sh', '.csv', '.zip', '.tar', '.gz')
     for root, dirs, filenames in os.walk(spectra_dir):
         for fname in sorted(filenames):
-            if not fname.lower().endswith(ignore_extensions):
+            # 排除以 . 开头的文件（如 .gitkeep, .DS_Store）以及特定的非光谱后缀
+            if not fname.startswith('.') and not fname.lower().endswith(ignore_extensions):
                 full_path = os.path.join(root, fname)
                 # 使用相对路径作为 key，保留子目录结构信息
                 rel_path = os.path.relpath(full_path, spectra_dir)
