@@ -1,0 +1,74 @@
+Found 62 files to process.
+API endpoint: http://localhost:8000/predict
+
+[1/62] Processing AlN/DS20251029/DC1.txt... Done. -> True
+[2/62] Processing AlN/DS20251029/DC2.txt... Done. -> True
+[3/62] Processing AlN/DS20251029/RF1.txt... Done. -> True
+[4/62] Processing AlN/DS20251029/RF2.txt... Done. -> True
+[5/62] Processing AlN/DS20251031/DC1.txt... Done. -> True
+[6/62] Processing AlN/DS20251031/DC2.txt... Done. -> True
+[7/62] Processing AlN/DS20251031/RF1.txt... Done. -> True
+[8/62] Processing AlN/DS20251031/RF2.txt... Done. -> True
+[9/62] Processing AlN/DS20251110/1.txt... Done. -> True
+[10/62] Processing AlN/DS20251110/10.txt... Done. -> True
+[11/62] Processing AlN/DS20251110/2.txt... Done. -> True
+[12/62] Processing AlN/DS20251110/3.txt... Done. -> True
+[13/62] Processing AlN/DS20251110/4.txt... Done. -> True
+[14/62] Processing AlN/DS20251110/6.txt... Done. -> True
+[15/62] Processing AlN/DS20251110/7.txt... Done. -> True
+[16/62] Processing AlN/DS20251110/8.txt... Done. -> True
+[17/62] Processing AlN/DS20251110/9.txt... Done. -> True
+[18/62] Processing AlN/DS20251117/DC1.txt... Done. -> True
+[19/62] Processing AlN/DS20251117/DC2.txt... Done. -> True
+[20/62] Processing AlN/DS20251117/DC3.txt... Done. -> True
+[21/62] Processing AlN/DS20251117/DC4.txt... Done. -> True
+[22/62] Processing AlN/DS20251117/DC5.txt... Done. -> True
+[23/62] Processing AlN/DS20251117/RF1.txt... Done. -> True
+[24/62] Processing AlN/DS20251117/RF2.txt... Done. -> True
+[25/62] Processing AlN/DS20251117/RF3.txt... Done. -> True
+[26/62] Processing AlN/DS20251117/RF4.txt... Done. -> True
+[27/62] Processing AlN/DS20251117/RF5.txt... Done. -> True
+[28/62] Processing AlN/XRD.txt... Failed (API Error: run_CNN.py failed (exit 1). Stderr: Traceback (most recent call last):
+  File "/workspace/Novel-Space/src/run_CNN.py", line 134, in <module>
+    results['Merged'] = spectrum_analysis.merge_results(results, final_conf, max_phases)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/autoXRD/spectrum_analysis/__init__.py", line 794, in merge_results
+    results['XRD']['filenames'], results['XRD']['phases'], results['XRD']['confs'], results['XRD']['backup_phases'], \
+ValueError: not enough values to unpack (expected 6, got 0)
+)
+[29/62] Processing CrSiTe体系的xrd数据/AgCr2Te4-J113-2.txt... Done. -> False
+[30/62] Processing CrSiTe体系的xrd数据/BiSiTe3-1.txt... Done. -> False
+[31/62] Processing CrSiTe体系的xrd数据/BiSiTe3-2.txt... Done. -> False
+[32/62] Processing CrSiTe体系的xrd数据/BiSiTe3-3.txt... Done. -> False
+[33/62] Processing CrSiTe体系的xrd数据/BiSiTe3-4.txt... Done. -> False
+[34/62] Processing CrSiTe体系的xrd数据/BiSiTe3-5.txt... Done. -> False
+[35/62] Processing CrSiTe体系的xrd数据/BiSiTe3-6.txt... Done. -> False
+[36/62] Processing CrSiTe体系的xrd数据/BiSiTe3-7.txt... Done. -> False
+[37/62] Processing CrSiTe体系的xrd数据/BiSiTe3-8.txt... Done. -> False
+[38/62] Processing CrSiTe体系的xrd数据/Cr5Te8-powder.txt... Done. -> False
+[39/62] Processing CrSiTe体系的xrd数据/CrAlTe-1.txt... Done. -> False
+[40/62] Processing CrSiTe体系的xrd数据/CrAlTe-2.txt... Done. -> False
+[41/62] Processing CrSiTe体系的xrd数据/CrAlTe-3.txt... Done. -> False
+[42/62] Processing CrSiTe体系的xrd数据/CrSiTe3  PURE FZ40.txt... Done. -> False
+[43/62] Processing CrSiTe体系的xrd数据/CrSiTe3 B027.txt... Done. -> False
+[44/62] Processing CrSiTe体系的xrd数据/CrSiTe3 B028.txt... Done. -> False
+[45/62] Processing CrSiTe体系的xrd数据/CrSiTe3 pure B025-2.txt... Done. -> False
+[46/62] Processing CrSiTe体系的xrd数据/CrSiTe3 pure B025-3.txt... Done. -> False
+[47/62] Processing CrSiTe体系的xrd数据/CrSiTe3 pure B025.txt... Done. -> False
+[48/62] Processing CrSiTe体系的xrd数据/CrSiTe3_1.txt... Done. -> False
+[49/62] Processing CrSiTe体系的xrd数据/CrSiTe3_180_10_70_0.01_txt.txt... Done. -> False
+[50/62] Processing CrSiTe体系的xrd数据/CrSiTe3_2.txt... Done. -> False
+[51/62] Processing CrSiTe体系的xrd数据/CrSiTe3_300_10_80_0.01.txt... Done. -> False
+[52/62] Processing CrSiTe体系的xrd数据/CrSiTe3_360_10_70_0.01_txt.txt... Done. -> False
+[53/62] Processing CrSiTe体系的xrd数据/CrSiTe3_back_10_70_0.01_Pr_1.txt... Done. -> False
+[54/62] Processing CrSiTe体系的xrd数据/CrSiTe3_rotation_0.01_10_80_0.01.txt... Done. -> False
+[55/62] Processing CrSiTe体系的xrd数据/CrTe2_JBX_J197_CT.txt... Done. -> False
+[56/62] Processing CrSiTe体系的xrd数据/Si2Te3.txt... Done. -> False
+[57/62] Processing corrupted_sample.txt... Done. -> False
+[58/62] Processing 粉末xrd实验数据/Cr2CuSe4-POWDER.txt... Done. -> False
+[59/62] Processing 粉末xrd实验数据/Cr2CuSe41.txt... Done. -> True
+[60/62] Processing 粉末xrd实验数据/CrI3.txt... Done. -> False
+[61/62] Processing 粉末xrd实验数据/NbSeI-POWDER-1.txt... Done. -> False
+[62/62] Processing 粉末xrd实验数据/NbSeI-POWDER-2.txt... Done. -> False
+
+All results saved to /home/tacmon/材料大模型-xrd-封装组件/user_code/our_model_results.json

@@ -1,0 +1,10 @@
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.git
+docker
+user_code
+task.md
+*.md
+!code/README.md
+!code/README_en.md

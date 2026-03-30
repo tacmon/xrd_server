@@ -1,0 +1,19 @@
+# XRD AutoAnalyzer API 服务编排文件
+# 使用方法：docker compose -f docker/docker-compose.yaml up --build
+
+services:
+  xrd-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: xrd-analyzer
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

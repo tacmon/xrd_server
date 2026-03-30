@@ -1,5 +1,6 @@
 import os
 import sys
+import argparse
 
 # Set working directory to project root for easy path access
 # Get the absolute path of the directory containing this script (src/)
@@ -18,6 +19,9 @@ import numpy as np
 import ast
 import re
 
+# 默认主要物质（与 References 中的 CIF 文件名前缀一致）
+DEFAULT_MAIN_SUBSTANCES = ["AlN_216"]
+
 def parse_list_string(s):
     """
     Parses a string representation of a list, handling 'np.float64(...)' and other quirks.
@@ -33,15 +37,27 @@ def parse_list_string(s):
         # Fallback for more complex cases if needed
         return []
 
-def process_results(input_file, output_file):
+def process_results(input_file, output_file, main_substances=None):
+    """
+    处理 result.csv，根据主要物质进行分类判断。
+
+    Args:
+        input_file: 输入 CSV 文件路径 (result.csv)
+        output_file: 输出 CSV 文件路径 (processed_result.csv)
+        main_substances: 主要物质列表，默认为 ["AlN_216"]
+    """
+    if main_substances is None:
+        main_substances = set(DEFAULT_MAIN_SUBSTANCES)
+    else:
+        main_substances = set(main_substances)
+
     if not os.path.exists(input_file):
         print(f"Error: {input_file} does not exist.")
         return
 
     df = pd.read_csv(input_file)
     
-    # 1. Identify all unique tags
-    all_tags = set()
+    # 1. 解析所有预测结果
     parsed_phases = []
     parsed_confidences = []
     
@@ -51,38 +67,10 @@ def process_results(input_file, output_file):
         
         parsed_phases.append(phases)
         parsed_confidences.append(confidences)
-        
-        for p in phases:
-            all_tags.add(p)
+
+    print(f"Processing with Main Substances: {sorted(list(main_substances))}")
     
-    if not all_tags:
-        print("No tags found in the 'Predicted phases' column.")
-        return
-    
-    # 2. Let the user pick multiple tags
-    sorted_tags = sorted(list(all_tags))
-    print("\nAvailable tags in the CSV:")
-    for i, tag in enumerate(sorted_tags, 1):
-        print(f"{i}. {tag}")
-    
-    while True:
-        try:
-            choice_str = input("\nPlease select the numbers of the 'Main Substances' (主要物质, separated by commas or spaces): ")
-            # Split by comma or space and convert to indices
-            selections = [int(x.strip()) - 1 for x in re.split(r'[,\s]+', choice_str) if x.strip()]
-            
-            if all(0 <= idx < len(sorted_tags) for idx in selections) and selections:
-                main_substances = set(sorted_tags[idx] for idx in selections)
-                break
-            else:
-                print(f"Invalid choices. Please enter numbers between 1 and {len(sorted_tags)}.")
-        except ValueError:
-            print("Invalid input. Please enter numbers.")
-    
-    selected_list = sorted(list(main_substances))
-    print(f"\nProcessing with Main Substances: {selected_list}")
-    
-    # 3. Process the data
+    # 2. 处理数据：最大置信度且置信度过半
     processed_data = []
     for i in range(len(df)):
         phases = parsed_phases[i]
@@ -115,7 +103,14 @@ def process_results(input_file, output_file):
     
     output_df = pd.DataFrame(processed_data)
     output_df.to_csv(output_file, index=False, encoding='utf-8-sig')
-    print(f"\nResults saved to '{output_file}'.")
+    print(f"Results saved to '{output_file}'.")
 
 if __name__ == "__main__":
-    process_results("result.csv", "processed_result.csv")
+    parser = argparse.ArgumentParser(description="处理 XRD 分析结果")
+    parser.add_argument("--input", type=str, default="result.csv", help="输入 CSV 文件")
+    parser.add_argument("--output", type=str, default="processed_result.csv", help="输出 CSV 文件")
+    parser.add_argument("--main_substances", type=str, nargs="+", default=DEFAULT_MAIN_SUBSTANCES,
+                        help="主要物质标签列表（默认: AlN_216）")
+    args = parser.parse_args()
+    
+    process_results(args.input, args.output, args.main_substances)
