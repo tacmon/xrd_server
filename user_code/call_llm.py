@@ -48,7 +48,7 @@ def get_high_quality_prompt(sample_id, data_content):
 def main():
     parser = argparse.ArgumentParser(description="XRD 通用大模型逐个调用工具")
     parser.add_argument("--folder", type=str, required=True,
-                        help="包含 .txt 文件的文件夹路径（支持子目录递归读取）")
+                        help="包含光谱数据文件的文件夹路径（支持子目录递归，自动过滤cif/jip等格式）")
     parser.add_argument("--api", type=str, default="https://api.siliconflow.cn/v1/chat/completions",
                         help="API URL")
     parser.add_argument("--key", type=str, default="记得更换为自己的api", help="API Key")
@@ -65,11 +65,12 @@ def main():
         print(f"错误: 文件夹 {args.folder} 不存在。")
         sys.exit(1)
 
-    # 递归收集所有 .txt 文件
+    # 递归收集所有数据文件
     txt_files = []
+    ignore_extensions = ('.cif', '.jip', '.jpg', '.png', '.jpeg', '.json', '.md', '.py', '.sh', '.csv', '.zip', '.tar', '.gz')
     for root, dirs, filenames in os.walk(args.folder):
         for fname in sorted(filenames):
-            if fname.endswith(".txt"):
+            if not fname.lower().endswith(ignore_extensions):
                 full_path = os.path.join(root, fname)
                 rel_path = os.path.relpath(full_path, args.folder)
                 txt_files.append((rel_path, full_path))
@@ -77,7 +78,7 @@ def main():
     txt_files.sort(key=lambda x: x[0])
 
     if not txt_files:
-        print("在指定文件夹中未找到 .txt 文件。")
+        print("在指定文件夹中未找到待测数据文件。")
         sys.exit(1)
         
     print(f"共发现 {len(txt_files)} 个文件。正在逐个处理（API: {args.api}, Model: {args.model}）...")

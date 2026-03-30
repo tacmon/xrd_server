@@ -35,7 +35,7 @@ def call_predict_api(content: str, api_url: str) -> dict:
 def main():
     parser = argparse.ArgumentParser(description="XRD 自有模型 API 调用脚本")
     parser.add_argument("--folder", type=str, default="./final_data",
-                        help="存放待测 XRD .txt 文件的目录（支持子目录递归读取）")
+                        help="存放待测 XRD 光谱数据文件的目录（支持子目录递归读取，会自动排除 cif/jip 等后缀）")
     parser.add_argument("--api", type=str, default=None,
                         help="API 预测地址（默认从 .env 读取，若无则 http://localhost:8000/predict）")
     parser.add_argument("--output", type=str, default="our_model_results.json",
@@ -63,11 +63,13 @@ def main():
         print(f"Error: Directory '{spectra_dir}' not found.")
         return
 
-    # 递归收集所有 .txt 文件
+    # 递归收集所有待测数据文件
     files = []
+    # 忽略这些无需被作为待测数据读取的文件后缀
+    ignore_extensions = ('.cif', '.jip', '.jpg', '.png', '.jpeg', '.json', '.md', '.py', '.sh', '.csv', '.zip', '.tar', '.gz')
     for root, dirs, filenames in os.walk(spectra_dir):
         for fname in sorted(filenames):
-            if fname.endswith('.txt'):
+            if not fname.lower().endswith(ignore_extensions):
                 full_path = os.path.join(root, fname)
                 # 使用相对路径作为 key，保留子目录结构信息
                 rel_path = os.path.relpath(full_path, spectra_dir)
@@ -76,7 +78,7 @@ def main():
     files.sort(key=lambda x: x[0])
 
     if not files:
-        print(f"No .txt files found in {spectra_dir}")
+        print(f"No valid data files found in {spectra_dir}")
         return
 
     print(f"Found {len(files)} files to process.")

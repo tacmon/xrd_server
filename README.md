@@ -46,7 +46,7 @@ cd user_code
 python3 call_our_model.py --folder ./final_data --output our_model_results.json
 ```
 > [!TIP]
-> 脚本会自动遍历 `final_data` 及所有子文件夹中的 `.txt` XRD 光谱文件，并逐个发送给服务进行推理。预测过程大约耗时几分钟（每条大约 1~3 秒）。完成预测后，结果会统一保存在 `our_model_results.json` 中。
+> 脚本会自动遍历 `final_data` 及所有子文件夹中的光谱数据文件（兼容多格式，已自动排除 `.cif` / `.jip` / `.json` 等非测试数据），并逐个发送给服务进行推理。预测过程大约耗时几分钟（每条大约 1~3 秒）。完成预测后，结果会统一保存在 `our_model_results.json` 中。
 
 ### 2.3 （可选）对比调用通用大模型
 我们还提供了完全相同输入输出格式的大模型调用对照脚本。您只需提供有效的 SiliconFlow API Key 等大模型 API 配置即可：
