@@ -1,0 +1,25 @@
+# Python-related ignores
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.env
+
+# Docker-related ignores
+docker/data/
+
+# IDE/System-related
+.vscode/
+.idea/
+.DS_Store
+
+# XRD Data and results (Ignore raw spectra for GitHub privacy)
+user_code/final_data/*
+!user_code/final_data/.gitkeep
+user_code/our_model_results.json
+user_code/llm_output_results.json
+user_code/batch_run.out
+user_code/batch_run.log
+
+# Models (optional, depends if you want to push weights to GitHub)
+# Models/*.pth

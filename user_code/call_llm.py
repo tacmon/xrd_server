@@ -23,22 +23,22 @@ def get_high_quality_prompt(sample_id, data_content):
     """
     system_prompt = (
         "您是一位资深的材料表征专家，专注于 X 射线衍射 (XRD) 分析领域。\n"
-        "您的任务是根据提供的 XRD 光谱数据（2-theta 角度 vs 相对强度），识别样品中是否包含 'AlN' 物相。\n\n"
+        "您的任务是根据提供的 XRD 光谱数据（2-theta 角度 vs 相对强度），识别样品中是否包含标签为 'AlN_216' 的物相（氮化铝）。\n\n"
         "【输入说明】\n"
-        "我将提供原始的 XRD 数据采样点（2-theta vs 相对强度）。请分析这些数据以判断物相。\n\n"
+        "我将提供清洗后的 XRD 数据采样点（2-theta vs 相对强度）。请分析这些数据以判断物相。\n\n"
         "【专业背景知识】\n"
-        "AlN (氮化铝) 属于六方晶系 (Wurtzite 结构)，空间群 P6₃mc (No. 186)。其 XRD 特征峰通常出现在以下 2-theta 位置（Cu K-alpha 辐射）：\n"
+        "AlN_216 (氮化铝) 属于六方晶系 (Wurtzite 结构)，空间群 P6₃mc (No. 186)。其 XRD 特征峰通常出现在以下 2-theta 位置（Cu K-alpha 辐射）：\n"
         "- 约 33.2° 对应 (100) 晶面。\n"
-        "- 约 36.0° 对应 (002) 晶面，这是非常强的特征峰。\n"
+        "- 约 36.0° 对应 (002) 晶面，这是极强的特征峰。\n"
         "- 约 37.9° 对应 (101) 晶面，这是最强的特征峰。\n"
         "- 约 49.8° 对应 (102) 晶面。\n"
         "- 约 59.3° 对应 (110) 晶面。\n"
-        "如果数据中在 36.0° 和 37.9° 附近有明显的强峰，则大概率包含 AlN。\n\n"
+        "如果在 36.0° 和 37.9° 附近观察到显著的衍射峰，请判定为包含 AlN_216。\n\n"
         "【输出要求】\n"
-        "1. 请直接分析给定的数据内容。\n"
-        "2. 最终输出必须是一个严格的 JSON 对象，不得包含任何文字说明、Markdown 标记或注释。\n"
+        "1. 请直接分析数据，不要解释过程。\n"
+        "2. 最终输出必须是一个严格的 JSON 对象。\n"
         "3. JSON 格式：{\"result\": true} 或 {\"result\": false}\n"
-        "4. 其中 true 表示识别出 AlN，false 表示未识别出。"
+        "4. 其中 true 表示识别出 AlN_216，false 表示未识别出。"
     )
 
     user_content = f"### 数据编号: {sample_id}\n数据内容:\n{data_content}\n---"
@@ -111,11 +111,11 @@ def main():
                     print("Failed: No valid numeric data found.")
                     results[rel_path] = "Parsing Error"
                     continue
-                    
-                # 为了防止超过大模型上下文限制，我们可以对其进行一定程度的降采样或截取。
-                # 由于这是文本大模型，数据量可能非常大（8000行+），建议截取或选择性传输
-                # 这里根据通用逻辑保留前3000行关键区段的峰值，并用换行符连接
-                data_content = "\n".join(valid_lines)
+                
+                # 采样逻辑：XRD数据通常点数极多（如8500个点），直接发送会超出大模型上下文或极其昂贵。
+                # 采样间隔为 3，保留约 1/3 的数据点，足以保留峰形特征
+                sampled_lines = valid_lines[::3]
+                data_content = "\n".join(sampled_lines)
                 
         except Exception as e:
             print(f"Failed to read: {e}")

@@ -1,7 +1,8 @@
 # ── XRD AutoAnalyzer API 服务镜像 ──
 # 本地测试基础镜像：pytorch/pytorch:2.8.0-cuda12.6-cudnn9-runtime
 # 提交给领导A时请改为：pytorch/pytorch:2.4.1-cuda12.1-cudnn9-runtime
-FROM pytorch/pytorch:2.8.0-cuda12.6-cudnn9-runtime
+# FROM pytorch/pytorch:2.8.0-cuda12.6-cudnn9-runtime
+FROM pytorch/pytorch:2.4.1-cuda12.1-cudnn9-runtime
 
 # 避免交互式安装提示
 ENV DEBIAN_FRONTEND=noninteractive
