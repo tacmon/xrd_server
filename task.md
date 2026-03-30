@@ -508,5 +508,10 @@ if __name__ == "__main__":
 3. 在code目录下，运行pip install -e .就可以得到完整的运行环境了
 
 **API服务提供**
-1. 准备工作：进入到code/Novel-Space目录，并且
-1. 用户调用API后，会传过来一个待测数据的文本
+预备：你需要理解code/Novel-Space/目录中的各种工具的作用，然后我为了避免你判断错误，所以删除了一些内容，我已经确认这些目前对于我们是无用的。
+1. 准备工作：进入到code/Novel-Space目录，不需要对Models、References、src目录进行修改，但是请清空Spectra目录
+2. 用户调用API后，会传过来一个待测数据的文本，读取该文件并保存到Spectra目录中，此时Spectra目录将会有一个txt文件
+3. 运行python src/run_CNN.py --inc_pdf，得到result.csv文件
+4. 运行tools.sh（错！虽然这个脚本整合了process_results.py的功能，但是需要多次终端用户交互输入，我们现在不需要！）。  正确的是：请直接修改process_results.py，不过你需要事先理解process_results.py的功能（提取result.csv中出现过的标签，然后用户指定哪些标签是“主要物质”，然后经过“最大值且置信度过半”的处理更新标签）然后根据我现在的需求——固定“主要物质”就是AlN一种把代码进行修改。
+5. 直接运行python src/process_results.py，会得到processed_result.csv文件
+6. 根据processed_results.csv中该物质的分类结果（csv中一定只有两行，第一行是栏目名称，第二行是对于Spectra中那一条数据的结果）返回true或false给用户
