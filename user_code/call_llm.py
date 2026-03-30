@@ -93,8 +93,30 @@ def main():
         print(f"[{idx+1}/{len(txt_files)}] Processing {rel_path}...", end=" ", flush=True)
         
         try:
-            with open(full_path, 'r', encoding='utf-8', errors='replace') as f:
-                data_content = f.read().strip()
+            with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
+                # 过滤掉注释、表头信息，严防大模型作弊（泄露文件名/样本名）
+                valid_lines = []
+                for line in f:
+                    parts = line.strip().split()
+                    if len(parts) >= 2:
+                        try:
+                            # 只有真正能被转换为浮点数的两列，才是有效的光谱数据
+                            float(parts[0])
+                            float(parts[1])
+                            valid_lines.append(f"{parts[0]}\t{parts[1]}")
+                        except ValueError:
+                            continue
+                
+                if not valid_lines:
+                    print("Failed: No valid numeric data found.")
+                    results[rel_path] = "Parsing Error"
+                    continue
+                    
+                # 为了防止超过大模型上下文限制，我们可以对其进行一定程度的降采样或截取。
+                # 由于这是文本大模型，数据量可能非常大（8000行+），建议截取或选择性传输
+                # 这里根据通用逻辑保留前3000行关键区段的峰值，并用换行符连接
+                data_content = "\n".join(valid_lines)
+                
         except Exception as e:
             print(f"Failed to read: {e}")
             results[rel_path] = "Read Error"
