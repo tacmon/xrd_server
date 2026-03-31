@@ -61,6 +61,16 @@ def main():
     
     args = parser.parse_args()
     
+    api_url = args.api
+    if api_url.endswith('/v1'):
+        api_url = api_url.rstrip('/') + '/chat/completions'
+    elif not api_url.endswith('/chat/completions'):
+        # 如果既不是 v1 结尾也不是端点结尾，尝试智能拼接
+        if '/v1' not in api_url:
+            api_url = api_url.rstrip('/') + '/v1/chat/completions'
+        else:
+            api_url = api_url.rstrip('/') + '/chat/completions'
+            
     if not os.path.exists(args.folder):
         print(f"错误: 文件夹 {args.folder} 不存在。")
         sys.exit(1)
@@ -113,9 +123,10 @@ def main():
                     results[rel_path] = "Parsing Error"
                     continue
                 
-                # 采样逻辑：XRD数据通常点数极多（如8500个点），直接发送会超出大模型上下文或极其昂贵。
-                # 采样间隔为 3，保留约 1/3 的数据点，足以保留峰形特征
-                sampled_lines = valid_lines[::3]
+                # 采样逻辑增强：XRD数据通常点数极多（如8500个点）。
+                # 对于 LLM 文本处理，保留 1/10 的数据点（约 850 个点）已足以保留所有关键衍射峰。
+                # 这样可以极大地减少传输数据量，提高响应速度并节省 Token。
+                sampled_lines = valid_lines[::10]
                 data_content = "\n".join(sampled_lines)
                 
         except Exception as e:
@@ -147,7 +158,8 @@ def main():
         
         for attempt in range(max_retries):
             try:
-                response = requests.post(args.api, headers=headers, json=payload, timeout=60)
+                print(f"Sending request (Attempt {attempt+1})...", end="\r", flush=True)
+                response = requests.post(api_url, headers=headers, json=payload, timeout=90) # 调大超时时间
                 
                 if response.status_code == 429:
                     print(f"Rate limited (429). Retrying in {retry_delay}s... (Attempt {attempt+1}/{max_retries})", end="\r", flush=True)

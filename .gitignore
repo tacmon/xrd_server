@@ -12,6 +12,7 @@ docker/data/
 .vscode/
 .idea/
 .DS_Store
+task.md
 
 # XRD Data and results (Ignore raw spectra for GitHub privacy)
 user_code/final_data/*
