@@ -128,7 +128,9 @@ def main():
             results[rel_path] = False
             continue
 
-        sys_prompt, user_prompt = get_high_quality_prompt(rel_path, data_content)
+        # 匿名化处理：给模型一个无关痛痒的编号作为 ID，严禁泄露包含答案的文件路径
+        anonymous_id = f"Sample-{idx+1}"
+        sys_prompt, user_prompt = get_high_quality_prompt(anonymous_id, data_content)
         
         payload = {
             "model": args.model,
