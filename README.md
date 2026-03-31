@@ -74,20 +74,13 @@ python3 evaluate.py --file our_model_results.json
 
 ---
 
-## 📦 4. 交付给领导A（打包指南）
+## 📦 4. 交付与分发指南
 
-当您需要在内部交付给对接同事（“领导A”）以部署在腾讯云服务器上时，请注意以下几点：
+当您需要将本服务打包交付并部署至内部或云端服务器上时，请注意以下几点：
 
-1. **基础镜像替换**：请在 `docker/Dockerfile` 的第 3 行，将基础镜像改为生产环境的统一镜像版本：
-   ```dockerfile
-   FROM pytorch/pytorch:2.4.1-cuda12.1-cudnn9-runtime
-   ```
-2. **源码打包发送**：目前 `docker-compose.yaml` 使用了 `build` 实时编译的形式，并未利用 Volume 映射隔离数据运行，且项目中包含模型权重文件。因此直接将该**整个项目文件夹打包（如生成 `.tar.gz` 压缩包）发送给同事**即可，无需额外生成庞大的独立 Image 镜像包传输。
-
-```bash
-# 生成交付压缩包前，请先清理一下本地容器和缓存：
-docker compose -f docker/docker-compose.yaml down
-rm -rf code/Novel-Space/Spectra/* code/Novel-Space/result.csv code/Novel-Space/processed_result.csv
-```
+### 交付与部署建议
+1. **基础环境确认**：确保 `docker/Dockerfile` 中使用的是生产使用的对应 Pytorch 镜像版本（如特定的运行时）。
+2. **线上镜像同步**：本项目支持标准的容器化交付，建议通过配置私有 Registry 仓库统一管理镜像版本分发。包含凭据相关的具体地址可记录于私密的工程描述中（如 `.gitignore` 保护的 `task.md`），请勿提交至公开代码库中。
+3. **预发布清理**：在执行远程推送之前，建议执行自动化清理（`docker compose down` 及临时文件等）以移除本地挂载卷产生的临时日志或缓存碎片，这能保证线上镜像的精简。
 ---
-*Author: API 服务化改造小组*
+*Author: API 自动化封装组*
