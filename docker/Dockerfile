@@ -13,9 +13,9 @@ WORKDIR /workspace
 COPY code/ /workspace/
 
 # 安装项目依赖（pip install -e . 安装 autoXRD 包）
-# 同时安装 API 服务所需的额外依赖
+# 同时安装 API 服务所需以及遗漏的额外依赖 (包含 mp-api)
 RUN pip install --no-cache-dir -e . && \
-    pip install --no-cache-dir fastapi uvicorn pandas
+    pip install --no-cache-dir fastapi uvicorn pandas mp-api
 
 # 确保 Spectra 目录存在且为空
 RUN rm -rf /workspace/Novel-Space/Spectra/* && \
